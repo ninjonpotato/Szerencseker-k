@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+   #canv {
+    border: 2px solid black;
+   }
+   #stick {
+    width: 20px;
+    height: 100px;
+    background-color: burlywood;
+    border: 2px solid black;
+    position: absolute;
+    left: 380px;
+   }
+   #container {
+    width: 800px;
+    height: 800px;
+
+   }
+   #items {
+    position: absolute;
+    right: 100px;
+    top: 0px;
+    border: 2px solid black;
+    width: fit-content;
+    input {
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px;
+    }
+    .item {
+        span {
+            margin-left: 20px;
+        }
+    button {
+        border-radius: 20px;
+        background-color: transparent;
+        font-size: 20px;
+        padding: 5px 20px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover  {
+        background-color: red;
+    }
+   }
+   }
+</style>
+<body>
+
+<div id="container">
+<div id="stick"></div>
+<canvas id="canv" width="800" height="800"></canvas>
+</div>
+<button id="start">Start</button>
+<div id="items">
+    <div class="item">
+        <span class="counter">1</span><input type="text" value="">
+    </div>
+     <button id="add">(+)</button>
+</div>
+
+
+
+
+
+<script>
+let canvas = document.getElementById("canv");
+let ctx = canvas.getContext("2d");
+//x,y,d,kend,végszög
+let WIDTH = 800;
+let HEIGHT = 800;
+let d = 400;
+let x = 400;
+let y = 400;
+//szeletek
+let db = 1
+let szeletSzog = (Math.PI * 2) / db;
+
+let angle = 0;
+let speed = 0; //ez egyszerre idő is meddig megy.
+let lassit = false;
+let megallas = false;
+let maxSpeed = 0.3
+let hold = 1; //meddig menjen, utána lelassul
+let slow =0.001
+let spinning = true;
+
+let time = 5; //perc
+draw();
+
+
+
+//Ha irunk a mezőbe akkor a megfelelő indexű elem értéke frissüljön
+var items = [];
+setAllInputs();
+
+function addNewItem(index,data){
+  items[index] = data
+    db = items.length
+    szeletSzog = (Math.PI * 2) / items.length;
+     draw();
+}
+
+function removeItem(index){
+    items.splice(index,1)
+    db = items.length
+    szeletSzog = (Math.PI * 2) / items.length;
+     draw();
+
+     let spans = document.querySelectorAll("span")
+spans.forEach((span,index) => {
+    span.innerText = index+1
+});
+
+}
+
+function setAllInputs() {
+let inputs = document.querySelectorAll("input")
+inputs.forEach((input,index) => {
+  input.addEventListener("input", (e) => {
+    addNewItem(index,e.target.value);
+   
+  });
+
+
+});
+}
+
+
+
+let startB = document.getElementById("start");
+startB.addEventListener("click",function(){start()})
+
+function setVars() {
+speed = 0; //ez egyszerre idő is meddig megy.
+lassit = false;
+megallas = false;
+maxSpeed = Math.random() * (0.5 - 0.3) + 0.3;
+hold = (Math.random()*6)+2; //meddig menjen, utána lelassul
+slow = Math.random() * ( 0.005- 0.001) +0.001;
+spinning = true;
+}
+
+function start() {
+ //x percenként lefut
+ setInterval(function(){
+setVars()
+animate()
+ },time*100000)
+
+}
+
+let addB = document.getElementById("add");
+addB.addEventListener("click",function(){
+
+    addNewItem(db,"")
+    let inputsDiv = document.querySelector(".item");
+    let inpDiv = document.createElement("div")
+    inpDiv.setAttribute("class","item")
+
+    let span = document.createElement("span")
+    span.innerText = db;
+    span.setAttribute("class","counter")
+    
+
+
+    let inp = document.createElement("input");
+    inp.setAttribute("int",db-1)
+    inpDiv.appendChild(span)
+    inpDiv.appendChild(inp);
+
+    let removeButton = document.createElement("button")
+    removeButton.innerText="-"
+    removeButton.addEventListener("click",function(){
+        let int = inp.getAttribute("int")
+        inpDiv.remove();
+        removeItem();
+        //kitörli azt az elemet a tömbből és az inputot
+
+
+    })
+    inpDiv.appendChild(removeButton)
+    
+
+    inputsDiv.appendChild(inpDiv)
+
+
+    setAllInputs();
+
+})
+
+
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+
+function getNyertes() {
+const fullCircle = Math.PI * 2;
+  const laserAngle = -Math.PI / 2; // felfelé
+  let current = angle % fullCircle;
+
+  // negatív szög kezelése
+  if (current < 0) current += fullCircle;
+
+  let relative = laserAngle - current;
+  if (relative < 0) relative += fullCircle;
+
+  let index = Math.floor(relative / szeletSzog);
+
+  return mod(index,db);
+
+}
+function animate() {
+    if (!spinning) return;
+    angle += speed;
+    if(lassit) {
+        setTimeout(function(){
+            megallas = true;
+            console.log("Megállás")
+        },hold*1000)
+        //hold it
+        if(megallas) {
+        speed -=slow
+  if (speed < 0.01) {
+  speed = 0;
+  spinning = false;
+  let winner = parseInt(getNyertes())
+  alert(items[winner])
+  return; // megáll
+}
+}
+    }else {
+         speed +=slow
+         if(speed >= maxSpeed) {
+            lassit = true;
+         }
+    }
+   
+    console.log(speed)
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+ draw()
+
+  requestAnimationFrame(animate);
+}
+
+
+function text(txt,start,slice) {
+  ctx.save();
+
+  ctx.translate(x, y);
+  ctx.rotate(start + slice / 2);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "white";
+  ctx.font = "40px Arial";
+
+  ctx.fillText(txt, d * 0.65, 5); // sugár mentén kifelé
+
+  ctx.restore();
+
+}
+
+function draw() {
+ ctx.save();
+  ctx.translate(x, y);
+ctx.rotate(angle);
+ctx.translate(-x, -y);
+  for (let i = 0; i < db; i++) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.arc(
+    x,
+    y,
+    d,
+    i * szeletSzog,
+    (i + 1) * szeletSzog
+  );
+  ctx.fillStyle = i % 2 === 0 ? "red" : "blue";
+  ctx.fill();
+  ctx.stroke();
+  text(i+1,i * szeletSzog, szeletSzog)
+}
+ctx.restore();
+
+
+}
+
+
+</script>
+
+</body>
+</html>
