@@ -5,6 +5,9 @@
     <title>Title</title>
 </head>
 <style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
    #canv {
     border: 2px solid black;
    }
@@ -12,7 +15,6 @@
     width: 20px;
     height: 100px;
     background-color: burlywood;
-    border: 2px solid black;
     position: absolute;
     left: 380px;
    }
@@ -30,14 +32,18 @@
     font-weight: bold;
     word-break: break-all;
    display: flex;
+   color: white;
+    -webkit-text-stroke: 4px black;  /* vastagság + szín */
    justify-content: center;
    align-items: center;
    text-align: center;
    }
    #items {
+    transform: scale(200%);
+    transform-origin: top   ;
     position: absolute;
-    right: 100px;
-    top: 0px;
+    right: 140px;
+    top: 50px;
     border: 2px solid black;
     width: fit-content;
     input {
@@ -131,8 +137,12 @@ let t = document.getElementById("time").addEventListener("input",function() {
 let timeI =  document.getElementById("time").innerText;
 time = parseInt(timeI)
 })  //perc
+let szinek = [{"red":0},{"blue":0},{"grey":0},{"green":0},{"yellow":0},{"cyan":0},{"magenta":0},{"orange":0},{"purple":0},{"pink":0},{"brown":0},{"lime":0},{"navy":0},{"teal":0},{"olive":0},{"maroon":0}]
+let valasztottSzineg = []
+ let elerheto_szin_count = 0;
 
-draw();
+generateSzinek()
+    draw();
 
 
 
@@ -145,7 +155,8 @@ function addNewItem(index,data){
     items[index] = data
     db = items.length
     szeletSzog = (Math.PI * 2) / items.length;
-     draw();
+    generateSzinek()
+    draw();
 }
 
 function removeItem(index){
@@ -188,10 +199,31 @@ slow = Math.random() * ( 0.005- 0.001) +0.001;
 spinning = true;
 }
 
+function generateSzinek() {
+
+    let elerheto = szinek.filter(obj => Object.values(obj)[0] === elerheto_szin_count);
+
+    if (elerheto.length === 0) {
+        console.log("Nincs több választható szín");
+        elerheto_szin_count++;
+        generateSzinek()
+        return;
+    }
+
+    let randSzin = Math.floor(Math.random() * elerheto.length);
+
+    let szin = Object.keys(elerheto[randSzin])[0];
+
+    // növeljük az eredeti tömbben is
+    let eredetiIndex = szinek.findIndex(o => Object.keys(o)[0] === szin);
+    szinek[eredetiIndex][szin]++;
+
+    valasztottSzineg.push(szin);
+
+}
 function start() {
  //x percenként lefut
    document.getElementById("nyertes").innerText = ""
-    
  setVars()
 animate()
  setInterval(function(){
@@ -284,7 +316,12 @@ function animate() {
   spinning = false;
   let winner = parseInt(getNyertes())
   console.log(items[winner])
+  if(items[winner] == undefined || items[winner] == ""){
+      document.getElementById("nyertes").innerText =winner+1
+  }else {
   document.getElementById("nyertes").innerText = items[winner]
+  }
+
   setTimeout(function(){
 //elkezdi a lefele animációt;
     let cont = document.getElementById("container");
@@ -320,7 +357,6 @@ function text(txt,start,slice) {
   ctx.textAlign = "center";
   ctx.fillStyle = "white";
   ctx.font = "40px Arial";
-
   ctx.fillText(txt, d * 0.65, 5); // sugár mentén kifelé
 
   ctx.restore();
@@ -328,6 +364,7 @@ function text(txt,start,slice) {
 }
 
 function draw() {
+
  ctx.save();
   ctx.translate(x, y);
 ctx.rotate(angle);
@@ -342,8 +379,14 @@ ctx.translate(-x, -y);
     i * szeletSzog,
     (i + 1) * szeletSzog
   );
-  ctx.fillStyle = i % 2 === 0 ? "red" : "blue";
+  ctx.fillStyle = valasztottSzineg[i]
+  //sorsolunk egy random színt, növeljük a counterjét, ha nincs szabad akkor a előröl.
+  
+
   ctx.fill();
+  ctx.strokeStyle = "black"; // border szín
+  ctx.lineWidth = 5;         // border vastagság
+  ctx.lineJoin = "round";    // szebb sarkok
   ctx.stroke();
   text(i+1,i * szeletSzog, szeletSzog)
 }
