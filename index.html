@@ -9,7 +9,7 @@
         font-family: Arial, Helvetica, sans-serif;
     }
    #canv {
-    border: 2px solid black;
+
    }
    #stick {
     width: 20px;
@@ -124,7 +124,7 @@ let y = 400;
 let db = 1
 let szeletSzog = (Math.PI * 2) / db;
 
-let angle = 0;
+let angle = Math.random()*360;
 let speed = 0; //ez egyszerre idő is meddig megy.
 let lassit = false;
 let megallas = false;
@@ -191,6 +191,7 @@ startB.addEventListener("click",function(){start()})
 
 function setVars() {
 speed = 0; //ez egyszerre idő is meddig megy.
+angle =  Math.random()*360;
 lassit = false;
 megallas = false;
 maxSpeed = Math.random() * (0.5 - 0.3) + 0.3;
