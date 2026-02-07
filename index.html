@@ -22,13 +22,15 @@
     width: 800px;
     height: 800px;
     position: absolute;
+    left: 800px;
 
    }
    #nyertesDiv {
     position: absolute;
     font-size: 100px;
-    width: 800px;
+    width: 1500px;
     height: 800px;
+    left: -350px;
     font-weight: bold;
     word-break: break-all;
    display: flex;
@@ -36,14 +38,17 @@
     -webkit-text-stroke: 4px black;  /* vastagság + szín */
    justify-content: center;
    align-items: center;
-   text-align: center;
    }
+ 
    #items {
     transform: scale(200%);
     transform-origin: top   ;
     position: absolute;
     right: 140px;
     top: 50px;
+    max-height: 300px;
+    overflow: scroll;
+    height: fit-content;
     border: 2px solid black;
     width: fit-content;
     input {
@@ -91,7 +96,7 @@
 
 <div id="container">
     <div id="nyertesDiv">
-    <p id="nyertes">1</p></div>
+    <p id="nyertes">Can't use bonflkaksjdcésajdfaspdjsaéldjsaédsapodsaélkdsaire</p></div>
     <div id="stick"></div>
     <canvas id="canv" width="800" height="800"></canvas>
 </div>
@@ -121,10 +126,10 @@ let d = 400;
 let x = 400;
 let y = 400;
 //szeletek
-let db = 1
+let db = 0
 let szeletSzog = (Math.PI * 2) / db;
 
-let angle = Math.random()*360;
+let angle = 0;
 let speed = 0; //ez egyszerre idő is meddig megy.
 let lassit = false;
 let megallas = false;
@@ -138,20 +143,30 @@ let timeI =  document.getElementById("time").innerText;
 time = parseInt(timeI)
 })  //perc
 let szinek = [{"red":0},{"blue":0},{"grey":0},{"green":0},{"yellow":0},{"cyan":0},{"magenta":0},{"orange":0},{"purple":0},{"pink":0},{"brown":0},{"lime":0},{"navy":0},{"teal":0},{"olive":0},{"maroon":0}]
+let quests = ["Can't use bonfire","Can't use estus","Can't roll","Can't use attack","Can't move forward","Can't move backward","Can't move left","Can't move right","Can't use left hand","Must use an estus","Can't stop moving","Can't use stamina"]
+
 let valasztottSzineg = []
  let elerheto_szin_count = 0;
 
 generateSzinek()
-    draw();
+
+draw();
 
 
 
 //Ha irunk a mezőbe akkor a megfelelő indexű elem értéke frissüljön
 var items = [];
+if(quests.length > 0) {
+    for(let q of quests) {
+ addNewInput(q) //az elsőt is állítsa be
+    }
+
+}
+
+
 setAllInputs();
 
 function addNewItem(index,data){
-    console.log(index)
     items[index] = data
     db = items.length
     szeletSzog = (Math.PI * 2) / items.length;
@@ -160,7 +175,10 @@ function addNewItem(index,data){
 }
 
 function removeItem(index){
+    console.log(items)
+    console.log("index:"+index)
     items.splice(index,1)
+      console.log(items)
     db = items.length
     szeletSzog = (Math.PI * 2) / items.length;
      draw();
@@ -169,12 +187,16 @@ function removeItem(index){
 spans.forEach((span,index) => {
     span.innerText = index+1
 });
-
+     let inputs = document.querySelectorAll("input")
+inputs.forEach((input,index) => {
+    input.value = items[index]
+});
 }
 
 function setAllInputs() {
 let inputs = document.querySelectorAll("input")
 inputs.forEach((input,index) => {
+input.setAttribute("int",index)
   input.addEventListener("input", (e) => {
     addNewItem(index,e.target.value);
    
@@ -191,7 +213,7 @@ startB.addEventListener("click",function(){start()})
 
 function setVars() {
 speed = 0; //ez egyszerre idő is meddig megy.
-angle =  Math.random()*360;
+angle = 0;
 lassit = false;
 megallas = false;
 maxSpeed = Math.random() * (0.5 - 0.3) + 0.3;
@@ -240,9 +262,16 @@ animate()
 }
 
 let addB = document.getElementById("add");
-addB.addEventListener("click",function(){
-
-    addNewItem(db,"")
+function addNewInput(value) {
+    console.log(db)
+    
+    if(items.length < 1) {
+    addNewItem(db,value)
+    let inp = document.querySelector("input")
+    inp.setAttribute("int",db-1)
+    inp.value = value
+    }else {
+         addNewItem(db,value)
     let inputsDiv = document.querySelector(".item");
     let inpDiv = document.createElement("div")
     inpDiv.setAttribute("class","item")
@@ -255,6 +284,8 @@ addB.addEventListener("click",function(){
 
     let inp = document.createElement("input");
     inp.setAttribute("int",db-1)
+    inp.value = value
+    
     inpDiv.appendChild(span)
     inpDiv.appendChild(inp);
 
@@ -263,7 +294,8 @@ addB.addEventListener("click",function(){
     removeButton.addEventListener("click",function(){
         let int = inp.getAttribute("int")
         inpDiv.remove();
-        removeItem();
+        removeItem(int);
+        setAllInputs()
         //kitörli azt az elemet a tömbből és az inputot
 
 
@@ -272,11 +304,18 @@ addB.addEventListener("click",function(){
     
 
     inputsDiv.appendChild(inpDiv)
-
+}
 
     setAllInputs();
+}
+
+addB.addEventListener("click",function(){
+
+    addNewInput();
 
 })
+
+
 
 
 function mod(n, m) {
