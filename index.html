@@ -19,7 +19,20 @@
    #container {
     width: 800px;
     height: 800px;
+    position: absolute;
 
+   }
+   #nyertesDiv {
+    position: absolute;
+    font-size: 100px;
+    width: 800px;
+    height: 800px;
+    font-weight: bold;
+    word-break: break-all;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   text-align: center;
    }
    #items {
     position: absolute;
@@ -50,13 +63,33 @@
     }
    }
    }
+
+   @keyframes falling {
+    0% {top: 0px;}
+    100% {top: 900px;}
+   }
+   .eses {
+    top: 900px;
+    animation: falling 1s;
+   }
+    @keyframes ascend {
+    0% {top: 900px;}
+    100% {top: 0px;}
+   }
+   .vissza {
+    top: 0;
+    animation: ascend 1s;
+   }
 </style>
 <body>
 
 <div id="container">
-<div id="stick"></div>
-<canvas id="canv" width="800" height="800"></canvas>
+    <div id="nyertesDiv">
+    <p id="nyertes">1</p></div>
+    <div id="stick"></div>
+    <canvas id="canv" width="800" height="800"></canvas>
 </div>
+<div style="height: 900px; width: 20px;"></div>
 <button id="start">Start</button>
 <div id="items">
     <div class="item">
@@ -65,7 +98,10 @@
      <button id="add">(+)</button>
 </div>
 
-
+<div id="timer">
+    <p>TIME:</p>
+    <input id="time" type="text">
+</div>
 
 
 
@@ -90,8 +126,12 @@ let maxSpeed = 0.3
 let hold = 1; //meddig menjen, utána lelassul
 let slow =0.001
 let spinning = true;
+let time = 3;
+let t = document.getElementById("time").addEventListener("input",function() {
+let timeI =  document.getElementById("time").innerText;
+time = parseInt(timeI)
+})  //perc
 
-let time = 5; //perc
 draw();
 
 
@@ -101,7 +141,8 @@ var items = [];
 setAllInputs();
 
 function addNewItem(index,data){
-  items[index] = data
+    console.log(index)
+    items[index] = data
     db = items.length
     szeletSzog = (Math.PI * 2) / items.length;
      draw();
@@ -149,10 +190,19 @@ spinning = true;
 
 function start() {
  //x percenként lefut
+   document.getElementById("nyertes").innerText = ""
+    
+ setVars()
+animate()
  setInterval(function(){
+    let cont = document.getElementById("container");
+
+document.getElementById("container").style.display = "block";
+      cont.classList.remove("eses")
+    cont.classList.add("vissza")
 setVars()
 animate()
- },time*100000)
+ },time*10000)
 
 }
 
@@ -201,8 +251,9 @@ function mod(n, m) {
 }
 
 function getNyertes() {
+    console.log(items)
 const fullCircle = Math.PI * 2;
-  const laserAngle = -Math.PI / 2; // felfelé
+  const laserAngle = -Math.PI/2 // felfelé
   let current = angle % fullCircle;
 
   // negatív szög kezelése
@@ -213,6 +264,7 @@ const fullCircle = Math.PI * 2;
 
   let index = Math.floor(relative / szeletSzog);
 
+console.log("index:"+index)
   return mod(index,db);
 
 }
@@ -231,7 +283,15 @@ function animate() {
   speed = 0;
   spinning = false;
   let winner = parseInt(getNyertes())
-  alert(items[winner])
+  console.log(items[winner])
+  document.getElementById("nyertes").innerText = items[winner]
+  setTimeout(function(){
+//elkezdi a lefele animációt;
+    let cont = document.getElementById("container");
+     cont.classList.remove("vissza")
+    cont.classList.add("eses")
+       document.getElementById("nyertes").innerText = ""
+  },5000)
   return; // megáll
 }
 }
